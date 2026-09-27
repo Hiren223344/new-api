@@ -6795,6 +6795,14 @@
     "Also used for the legacy Telegram bot name shown to users; the bot must be an administrator of the channel below.": "Also used for the legacy Telegram bot name shown to users; the bot must be an administrator of the channel below.",
     "Join Link": "Join Link",
     "The channel username or numeric chat ID passed to the Telegram Bot API.": "The channel username or numeric chat ID passed to the Telegram Bot API.",
-    "Shown to users so they can actually join the channel.": "Shown to users so they can actually join the channel."
+    "Shown to users so they can actually join the channel.": "Shown to users so they can actually join the channel.",
+    "GM Pay": "GM Pay",
+    "Crypto top-up gateway, configured the same way as Epay.": "Crypto top-up gateway, configured the same way as Epay.",
+    "Obtain the domain, merchant PID, and API secret from your GM Pay account, then configure the notify URL below (or leave it blank to use the automatic callback address).": "Obtain the domain, merchant PID, and API secret from your GM Pay account, then configure the notify URL below (or leave it blank to use the automatic callback address).",
+    "Enable GM Pay": "Enable GM Pay",
+    "Merchant PID": "Merchant PID",
+    "API Secret": "API Secret",
+    "Minimum Top-up": "Minimum Top-up",
+    "Notify URL (optional)": "Notify URL (optional)"
   }
 }

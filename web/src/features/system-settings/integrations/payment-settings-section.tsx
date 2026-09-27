@@ -80,6 +80,10 @@ import {
   WaffoSettingsSection,
   type WaffoSettingsValues,
 } from './waffo-settings-section'
+import {
+  GmpaySettingsSection,
+  type GmpaySettingsValues,
+} from './gmpay-settings-section'
 
 function isHttpOriginUrl(value: string) {
   const trimmed = value.trim()
@@ -177,13 +181,26 @@ const paymentSchema = z.object({
   WaffoPancakeMerchantID: z.string(),
   WaffoPancakePrivateKey: z.string(),
   WaffoPancakeReturnURL: z.string(),
+  GmpayEnabled: z.boolean(),
+  GmpayDomain: z.string().refine((value) => {
+    const trimmed = value.trim()
+    if (!trimmed) return true
+    return /^https?:\/\//.test(trimmed)
+  }, 'Provide a valid domain starting with http:// or https://'),
+  GmpayPid: z.string(),
+  GmpaySecret: z.string(),
+  GmpayCurrency: z.string(),
+  GmpayMinTopUp: z.coerce.number().min(1),
+  GmpayNotifyUrl: z.string(),
 })
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
 type WaffoFormFieldValues = Omit<WaffoSettingsValues, 'WaffoPayMethods'>
 type PaymentBaseFormValues = Omit<
   PaymentFormValues,
-  keyof WaffoFormFieldValues | keyof WaffoPancakeSettingsValues
+  | keyof WaffoFormFieldValues
+  | keyof WaffoPancakeSettingsValues
+  | keyof GmpaySettingsValues
 >
 
 const CURRENT_COMPLIANCE_TERMS_VERSION = 'v1'
@@ -202,6 +219,7 @@ type PaymentSettingsSectionProps = {
   waffoPancakeDefaultValues: WaffoPancakeSettingsValues
   waffoPancakeProvisionedStoreID?: string
   waffoPancakeProvisionedProductID?: string
+  gmpayDefaultValues: GmpaySettingsValues
   complianceDefaults: PaymentComplianceDefaults
 }
 
@@ -220,6 +238,7 @@ export function PaymentSettingsSection({
   waffoPancakeDefaultValues,
   waffoPancakeProvisionedStoreID,
   waffoPancakeProvisionedProductID,
+  gmpayDefaultValues,
   complianceDefaults,
 }: PaymentSettingsSectionProps) {
   const { t } = useTranslation()
@@ -230,8 +249,14 @@ export function PaymentSettingsSection({
       ...defaultValues,
       ...waffoDefaultValues,
       ...waffoPancakeDefaultValues,
+      ...gmpayDefaultValues,
     }),
-    [defaultValues, waffoDefaultValues, waffoPancakeDefaultValues]
+    [
+      defaultValues,
+      waffoDefaultValues,
+      waffoPancakeDefaultValues,
+      gmpayDefaultValues,
+    ]
   )
   const initialRef = React.useRef(initialFormValues)
   const defaultsSignature = React.useMemo(
@@ -405,6 +430,19 @@ export function PaymentSettingsSection({
     [setPaymentValue]
   )
 
+  const setGmpayValue = React.useCallback(
+    <K extends keyof GmpaySettingsValues>(
+      key: K,
+      value: GmpaySettingsValues[K]
+    ) => {
+      setPaymentValue(
+        key as keyof PaymentFormValues,
+        value as PaymentFormValues[keyof PaymentFormValues]
+      )
+    },
+    [setPaymentValue]
+  )
+
   React.useEffect(() => {
     const parsedDefaults = JSON.parse(defaultsSignature) as PaymentFormValues
     initialRef.current = parsedDefaults
@@ -458,6 +496,13 @@ export function PaymentSettingsSection({
       WaffoPancakeReturnURL: removeTrailingSlash(
         values.WaffoPancakeReturnURL.trim()
       ),
+      GmpayEnabled: values.GmpayEnabled,
+      GmpayDomain: removeTrailingSlash(values.GmpayDomain.trim()),
+      GmpayPid: values.GmpayPid.trim(),
+      GmpaySecret: values.GmpaySecret.trim(),
+      GmpayCurrency: values.GmpayCurrency.trim() || 'USD',
+      GmpayMinTopUp: values.GmpayMinTopUp,
+      GmpayNotifyUrl: values.GmpayNotifyUrl.trim(),
     }
 
     const initial = {
@@ -505,6 +550,13 @@ export function PaymentSettingsSection({
       WaffoPancakeReturnURL: removeTrailingSlash(
         initialRef.current.WaffoPancakeReturnURL.trim()
       ),
+      GmpayEnabled: initialRef.current.GmpayEnabled,
+      GmpayDomain: removeTrailingSlash(initialRef.current.GmpayDomain.trim()),
+      GmpayPid: initialRef.current.GmpayPid.trim(),
+      GmpaySecret: initialRef.current.GmpaySecret.trim(),
+      GmpayCurrency: initialRef.current.GmpayCurrency.trim() || 'USD',
+      GmpayMinTopUp: initialRef.current.GmpayMinTopUp,
+      GmpayNotifyUrl: initialRef.current.GmpayNotifyUrl.trim(),
     }
 
     const updates: Array<{ key: string; value: string | number | boolean }> = []
@@ -702,6 +754,34 @@ export function PaymentSettingsSection({
       updates.push({ key: 'WaffoPayMethods', value: sanitized.WaffoPayMethods })
     }
 
+    if (sanitized.GmpayEnabled !== initial.GmpayEnabled) {
+      updates.push({ key: 'GmpayEnabled', value: sanitized.GmpayEnabled })
+    }
+
+    if (sanitized.GmpayDomain !== initial.GmpayDomain) {
+      updates.push({ key: 'GmpayDomain', value: sanitized.GmpayDomain })
+    }
+
+    if (sanitized.GmpayPid !== initial.GmpayPid) {
+      updates.push({ key: 'GmpayPid', value: sanitized.GmpayPid })
+    }
+
+    if (sanitized.GmpaySecret) {
+      updates.push({ key: 'GmpaySecret', value: sanitized.GmpaySecret })
+    }
+
+    if (sanitized.GmpayCurrency !== initial.GmpayCurrency) {
+      updates.push({ key: 'GmpayCurrency', value: sanitized.GmpayCurrency })
+    }
+
+    if (sanitized.GmpayMinTopUp !== initial.GmpayMinTopUp) {
+      updates.push({ key: 'GmpayMinTopUp', value: sanitized.GmpayMinTopUp })
+    }
+
+    if (sanitized.GmpayNotifyUrl !== initial.GmpayNotifyUrl) {
+      updates.push({ key: 'GmpayNotifyUrl', value: sanitized.GmpayNotifyUrl })
+    }
+
     const hasWaffoPancakeChanges =
       sanitized.WaffoPancakeMerchantID !== initial.WaffoPancakeMerchantID ||
       sanitized.WaffoPancakePrivateKey.length > 0 ||
@@ -797,6 +877,15 @@ export function PaymentSettingsSection({
     WaffoPancakePrivateKey: currentFormValues.WaffoPancakePrivateKey,
     WaffoPancakeReturnURL: currentFormValues.WaffoPancakeReturnURL,
   }
+  const gmpayValues: GmpaySettingsValues = {
+    GmpayEnabled: currentFormValues.GmpayEnabled,
+    GmpayDomain: currentFormValues.GmpayDomain,
+    GmpayPid: currentFormValues.GmpayPid,
+    GmpaySecret: currentFormValues.GmpaySecret,
+    GmpayCurrency: currentFormValues.GmpayCurrency,
+    GmpayMinTopUp: currentFormValues.GmpayMinTopUp,
+    GmpayNotifyUrl: currentFormValues.GmpayNotifyUrl,
+  }
 
   return (
     <SettingsSection title={t('Payment Gateway')}>
@@ -886,6 +975,7 @@ export function PaymentSettingsSection({
                 <TabsTrigger value='creem'>Creem</TabsTrigger>
                 <TabsTrigger value='waffo-pancake'>Waffo Pancake</TabsTrigger>
                 <TabsTrigger value='waffo'>Waffo</TabsTrigger>
+                <TabsTrigger value='gmpay'>GM Pay</TabsTrigger>
               </TabsList>
             </div>
 
@@ -1626,6 +1716,13 @@ export function PaymentSettingsSection({
                 onValueChange={setWaffoValue}
                 payMethods={waffoPayMethods}
                 onPayMethodsChange={setWaffoPayMethods}
+              />
+            </TabsContent>
+
+            <TabsContent value='gmpay' className={paymentTabContentClassName}>
+              <GmpaySettingsSection
+                values={gmpayValues}
+                onValueChange={setGmpayValue}
               />
             </TabsContent>
           </Tabs>

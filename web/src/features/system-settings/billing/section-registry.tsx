@@ -178,6 +178,15 @@ const BILLING_SECTIONS = [
         }}
         waffoPancakeProvisionedStoreID={settings.WaffoPancakeStoreID ?? ''}
         waffoPancakeProvisionedProductID={settings.WaffoPancakeProductID ?? ''}
+        gmpayDefaultValues={{
+          GmpayEnabled: settings.GmpayEnabled ?? false,
+          GmpayDomain: settings.GmpayDomain ?? '',
+          GmpayPid: settings.GmpayPid ?? '',
+          GmpaySecret: settings.GmpaySecret ?? '',
+          GmpayCurrency: settings.GmpayCurrency ?? 'USD',
+          GmpayMinTopUp: settings.GmpayMinTopUp ?? 1,
+          GmpayNotifyUrl: settings.GmpayNotifyUrl ?? '',
+        }}
         complianceDefaults={{
           confirmed: settings['payment_setting.compliance_confirmed'] ?? false,
           termsVersion:

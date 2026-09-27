@@ -355,6 +355,13 @@ export type BillingSettings = {
   // section (saved via /api/option/waffo-pancake/save).
   WaffoPancakeStoreID: string
   WaffoPancakeProductID: string
+  GmpayEnabled: boolean
+  GmpayDomain: string
+  GmpayPid: string
+  GmpaySecret: string
+  GmpayCurrency: string
+  GmpayMinTopUp: number
+  GmpayNotifyUrl: string
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number
