@@ -125,6 +125,13 @@ func InitOptionMap() {
 	common.OptionMap["WaffoPancakeMinTopUp"] = strconv.Itoa(setting.WaffoPancakeMinTopUp)
 	common.OptionMap["WaffoPancakeStoreID"] = setting.WaffoPancakeStoreID
 	common.OptionMap["WaffoPancakeProductID"] = setting.WaffoPancakeProductID
+	common.OptionMap["GmpayEnabled"] = strconv.FormatBool(setting.GmpayEnabled)
+	common.OptionMap["GmpayDomain"] = setting.GmpayDomain
+	common.OptionMap["GmpayPid"] = setting.GmpayPid
+	common.OptionMap["GmpaySecret"] = setting.GmpaySecret
+	common.OptionMap["GmpayCurrency"] = setting.GmpayCurrency
+	common.OptionMap["GmpayMinTopUp"] = strconv.Itoa(setting.GmpayMinTopUp)
+	common.OptionMap["GmpayNotifyUrl"] = setting.GmpayNotifyUrl
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
 	common.OptionMap["AutoGroups"] = setting.AutoGroups2JsonString()
@@ -562,6 +569,20 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.WaffoPancakePrivateKey = value
 	case "WaffoPancakeReturnURL":
 		setting.WaffoPancakeReturnURL = value
+	case "GmpayEnabled":
+		setting.GmpayEnabled = value == "true"
+	case "GmpayDomain":
+		setting.GmpayDomain = value
+	case "GmpayPid":
+		setting.GmpayPid = value
+	case "GmpaySecret":
+		setting.GmpaySecret = value
+	case "GmpayCurrency":
+		setting.GmpayCurrency = value
+	case "GmpayMinTopUp":
+		setting.GmpayMinTopUp, _ = strconv.Atoi(value)
+	case "GmpayNotifyUrl":
+		setting.GmpayNotifyUrl = value
 	case "WaffoPancakeStoreID":
 		setting.WaffoPancakeStoreID = value
 	case "WaffoPancakeProductID":

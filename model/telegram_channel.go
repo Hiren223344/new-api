@@ -16,15 +16,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-// ============================================================================
-// Wallet Hooks Exports
-// ============================================================================
+package model
 
-export * from './use-topup-info'
-export * from './use-payment'
-export * from './use-affiliate'
-export * from './use-redemption'
-export * from './use-creem-payment'
-export * from './use-waffo-payment'
-export * from './use-waffo-pancake-payment'
-export * from './use-gmpay-payment'
+import "github.com/QuantumNous/new-api/common"
+
+// MarkTelegramChannelVerified records that userId is currently a member of the
+// administrator-configured Telegram channel. It does not change AuthVersion:
+// verification is not a credential change and must not revoke other sessions.
+func MarkTelegramChannelVerified(userId int) error {
+	now := common.GetTimestamp()
+	if err := DB.Model(&User{}).Where("id = ?", userId).Update("telegram_channel_verified_at", now).Error; err != nil {
+		return err
+	}
+	return updateUserCacheField(userId, "TelegramChannelVerifiedAt", now)
+}

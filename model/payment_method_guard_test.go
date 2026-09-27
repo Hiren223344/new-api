@@ -103,6 +103,53 @@ func TestRechargeWaffoPancake_RejectsMismatchedPaymentMethod(t *testing.T) {
 	assert.Equal(t, 0, getUserQuotaForPaymentGuardTest(t, 101))
 }
 
+func TestRechargeGmpay_RejectsMismatchedPaymentMethod(t *testing.T) {
+	truncateTables(t)
+
+	insertUserForPaymentGuardTest(t, 102, 0)
+	insertTopUpForPaymentGuardTest(t, "gmpay-guard", 102, PaymentProviderStripe)
+
+	err := RechargeGmpay("gmpay-guard", "127.0.0.1")
+	require.ErrorIs(t, err, ErrPaymentMethodMismatch)
+
+	topUp := GetTopUpByTradeNo("gmpay-guard")
+	require.NotNil(t, topUp)
+	assert.Equal(t, common.TopUpStatusPending, topUp.Status)
+	assert.Equal(t, 0, getUserQuotaForPaymentGuardTest(t, 102))
+}
+
+func TestRechargeGmpayCreditsQuotaExactlyOnce(t *testing.T) {
+	truncateTables(t)
+
+	oldQuotaPerUnit := common.QuotaPerUnit
+	common.QuotaPerUnit = 500000
+	t.Cleanup(func() { common.QuotaPerUnit = oldQuotaPerUnit })
+
+	user := insertUserForPaymentGuardTest(t, 504, 0)
+	insertTopUpForPaymentGuardTest(t, "GMPAYTESTONCE", user.Id, PaymentProviderGmpay)
+
+	err := RechargeGmpay("GMPAYTESTONCE", "127.0.0.1")
+	require.NoError(t, err)
+	assert.Equal(t, 2*500000, getUserQuotaForPaymentGuardTest(t, user.Id))
+
+	reloaded := GetTopUpByTradeNo("GMPAYTESTONCE")
+	require.NotNil(t, reloaded)
+	assert.Equal(t, common.TopUpStatusSuccess, reloaded.Status)
+	assert.NotZero(t, reloaded.CompleteTime)
+
+	// Idempotent: a repeated webhook delivery must not double-credit.
+	err = RechargeGmpay("GMPAYTESTONCE", "127.0.0.1")
+	require.NoError(t, err)
+	assert.Equal(t, 2*500000, getUserQuotaForPaymentGuardTest(t, user.Id))
+}
+
+func TestRechargeGmpay_RejectsUnknownOrder(t *testing.T) {
+	truncateTables(t)
+
+	err := RechargeGmpay("no-such-order", "127.0.0.1")
+	require.ErrorIs(t, err, ErrTopUpNotFound)
+}
+
 func TestUpdatePendingTopUpStatus_RejectsMismatchedPaymentProvider(t *testing.T) {
 	testCases := []struct {
 		name                    string

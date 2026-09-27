@@ -108,3 +108,23 @@ func isEpayWebhookConfigured() bool {
 func isEpayWebhookEnabled() bool {
 	return isEpayTopUpEnabled()
 }
+
+func isGmpayTopUpEnabled() bool {
+	if !isPaymentComplianceConfirmed() {
+		return false
+	}
+	if !setting.GmpayEnabled {
+		return false
+	}
+	return isGmpayWebhookConfigured()
+}
+
+func isGmpayWebhookConfigured() bool {
+	return strings.TrimSpace(setting.GmpayDomain) != "" &&
+		strings.TrimSpace(setting.GmpayPid) != "" &&
+		strings.TrimSpace(setting.GmpaySecret) != ""
+}
+
+func isGmpayWebhookEnabled() bool {
+	return isGmpayTopUpEnabled()
+}

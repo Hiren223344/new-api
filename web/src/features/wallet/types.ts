@@ -45,6 +45,9 @@ export type CreemPaymentResponse = ApiResponse<{ checkout_url: string }>
 export type WaffoPaymentResponse = ApiResponse<
   { payment_url?: string } | string
 >
+export type GmpayPaymentResponse = ApiResponse<
+  { payment_url?: string; order_id?: string } | string
+>
 export type WaffoPancakePaymentResponse = ApiResponse<
   | {
       checkout_url?: string
@@ -150,6 +153,10 @@ export interface TopupInfo {
   enable_waffo_pancake_topup?: boolean
   /** Minimum topup amount for Waffo Pancake */
   waffo_pancake_min_topup?: number
+  /** Whether GM Pay topup is enabled */
+  enable_gmpay_topup?: boolean
+  /** Minimum topup amount for GM Pay */
+  gmpay_min_topup?: number
   /** Whether redemption code usage is enabled */
   enable_redemption?: boolean
   /** Whether compliance confirmation has been completed */
@@ -200,6 +207,14 @@ export interface WaffoPaymentRequest {
  * Waffo Pancake payment request parameters
  */
 export interface WaffoPancakePaymentRequest {
+  /** Topup amount */
+  amount: number
+}
+
+/**
+ * GM Pay payment request parameters
+ */
+export interface GmpayPaymentRequest {
   /** Topup amount */
   amount: number
 }

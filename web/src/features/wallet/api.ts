@@ -39,6 +39,8 @@ import type {
   WaffoPaymentResponse,
   WaffoPancakePaymentRequest,
   WaffoPancakePaymentResponse,
+  GmpayPaymentRequest,
+  GmpayPaymentResponse,
 } from './types'
 
 // ============================================================================
@@ -176,6 +178,18 @@ export async function requestWaffoPancakePayment(
   request: WaffoPancakePaymentRequest
 ): Promise<WaffoPancakePaymentResponse> {
   const res = await api.post('/api/user/waffo-pancake/pay', request, {
+    skipBusinessError: true,
+  } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Request GM Pay payment
+ */
+export async function requestGmpayPayment(
+  request: GmpayPaymentRequest
+): Promise<GmpayPaymentResponse> {
+  const res = await api.post('/api/user/gmpay/pay', request, {
     skipBusinessError: true,
   } as Record<string, unknown>)
   return res.data

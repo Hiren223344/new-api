@@ -26,32 +26,14 @@ import { IconDiscord } from '@/assets/brand-icons'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { StatusBadge } from '@/components/status-badge'
 import { Button } from '@/components/ui/button'
-import { createOAuthAuthorization } from '@/features/auth/api'
-import {
-  openOAuthPopup,
-  type OAuthPopupExchange,
-} from '@/features/auth/lib/oauth-popup'
+import { useOAuthAccountBinding } from '@/features/auth/hooks/use-oauth-account-binding'
 import { SecureVerificationDialog } from '@/features/auth/secure-verification'
 import type { CustomOAuthProviderInfo } from '@/features/auth/types'
 import { getSelfOAuthBindings, unbindCustomOAuth } from '@/features/profile/api'
-import type {
-  UserProfile,
-  BindingItem,
-  AccountSecurityResult,
-} from '@/features/profile/types'
+import type { UserProfile, BindingItem } from '@/features/profile/types'
 import { useDialogs } from '@/hooks/use-dialog'
 import { useStatus } from '@/hooks/use-status'
-import { api } from '@/lib/api'
-import {
-  buildOAuthAuthorizationUrl,
-  indexCustomOAuthBindings,
-  type CustomOAuthBinding,
-} from '@/lib/oauth'
-import {
-  AuthOperationError,
-  authRequestOptions,
-  authResult,
-} from '@/lib/secure-verification'
+import { indexCustomOAuthBindings, type CustomOAuthBinding } from '@/lib/oauth'
 
 import { useAccountSecurity } from '../hooks/use-account-security'
 import { EmailBindDialog } from './dialogs/email-bind-dialog'
@@ -68,12 +50,6 @@ interface AccountBindingsProps {
 
 type DialogKey = 'email' | 'wechat'
 
-type PreparedOAuthBinding = AccountSecurityResult & {
-  provider: string
-  state: string
-  url: string
-}
-
 export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
   const { t } = useTranslation()
   const dialogs = useDialogs<DialogKey>()
@@ -84,10 +60,6 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
   )
   const security = useAccountSecurity()
   const unbinding = security.pending
-  const [preparedBinding, setPreparedBinding] =
-    useState<PreparedOAuthBinding | null>(null)
-  const bindingsLocked =
-    security.pending || Boolean(preparedBinding) || dialogs.hasAnyOpen
 
   const customProviders = status?.custom_oauth_providers as
     | CustomOAuthProviderInfo[]
@@ -113,6 +85,13 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
     fetchCustomBindings()
   }, [fetchCustomBindings])
 
+  const oauthBinding = useOAuthAccountBinding(security, () => {
+    onUpdate()
+    void fetchCustomBindings()
+  })
+  const bindingsLocked =
+    security.pending || Boolean(oauthBinding.prepared) || dialogs.hasAnyOpen
+
   const handleUnbindCustom = async () => {
     if (!unbindTarget) return
     const target = unbindTarget
@@ -136,91 +115,16 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
     }
   }
 
-  const startOAuthBinding = async (provider: string) => {
-    const prepared = await security.run(async (signal) => {
-      const proof = await security.verify(
-        { scope: 'account.binding.bind', context: { provider } },
-        signal
-      )
-      const authorization = await createOAuthAuthorization(
-        provider,
-        'bind',
-        undefined,
-        signal,
-        proof
-      )
-      return {
-        provider,
-        state: authorization.state,
-        url:
-          authorization.authorizationUrl ??
-          buildOAuthAuthorizationUrl(
-            provider,
-            authorization.state,
-            status ?? {}
-          ),
-        notification_warning: false,
-      }
-    })
-    if (prepared) setPreparedBinding(prepared)
-  }
-
-  // A separate user click opens the provider popup. Opening it after an async
-  // verification response would otherwise be blocked by browsers such as Safari.
-  const completeOAuthBinding = async () => {
-    if (!preparedBinding) return
-    const prepared = preparedBinding
-    setPreparedBinding(null)
-    const result = await security.run(async (signal) => {
-      let exchange: OAuthPopupExchange | undefined
-      try {
-        exchange = await openOAuthPopup({
-          provider: prepared.provider,
-          intent: 'bind',
-          signal,
-          prepare: async () => ({ state: prepared.state, url: prepared.url }),
-        })
-        const callback = exchange.callback
-        const outcome = await authResult<AccountSecurityResult>(
-          api.get(`/api/oauth/${prepared.provider}`, {
-            ...authRequestOptions,
-            singleUseAuthorization: true,
-            disableDuplicate: true,
-            signal: exchange.signal,
-            params: {
-              state: callback.state,
-              code: callback.code,
-              error: callback.error,
-              error_description: callback.errorDescription,
-            },
-          })
-        )
-        exchange.signal.throwIfAborted()
-        exchange.finish({ success: true })
-        return outcome
-      } catch (error) {
-        const failure = AuthOperationError.from(
-          exchange?.signal.aborted ? exchange.signal.reason : error
-        )
-        exchange?.finish({ success: false, message: failure.message })
-        throw failure
-      }
-    })
-    if (result) {
-      toast.success(t('Binding successful!'))
-      onUpdate()
-      await fetchCustomBindings()
-    }
-  }
-
   const handleBindCustomOAuth = (provider: CustomOAuthProviderInfo) =>
-    startOAuthBinding(provider.slug)
+    void oauthBinding.startBinding(provider.slug)
 
   const closeDialogs = dialogs.closeAll
   useEffect(() => {
-    setPreparedBinding(null)
+    oauthBinding.cancelPrepared()
     setUnbindTarget(null)
     closeDialogs()
+    // oauthBinding is a fresh object every render; only session changes should reset it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [security.sessionKey, closeDialogs])
 
   if (!profile || !status || loading) return null
@@ -257,7 +161,7 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
         (profile as unknown as Record<string, unknown>).github_id
       ),
       isEnabled: status?.github_oauth || false,
-      onBind: () => void startOAuthBinding('github'),
+      onBind: () => void oauthBinding.startBinding('github'),
     },
     {
       id: 'discord',
@@ -270,7 +174,7 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
         (profile as unknown as Record<string, unknown>).discord_id
       ),
       isEnabled: status?.discord_oauth || false,
-      onBind: () => void startOAuthBinding('discord'),
+      onBind: () => void oauthBinding.startBinding('discord'),
     },
     {
       id: 'oidc',
@@ -281,7 +185,7 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
         | undefined,
       isBound: Boolean((profile as unknown as Record<string, unknown>).oidc_id),
       isEnabled: status?.oidc_enabled || false,
-      onBind: () => void startOAuthBinding('oidc'),
+      onBind: () => void oauthBinding.startBinding('oidc'),
     },
     {
       id: 'telegram',
@@ -294,7 +198,7 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
         (profile as unknown as Record<string, unknown>).telegram_id
       ),
       isEnabled: status?.telegram_oauth || false,
-      onBind: () => void startOAuthBinding('telegram'),
+      onBind: () => void oauthBinding.startBinding('telegram'),
     },
     {
       id: 'linuxdo',
@@ -307,7 +211,7 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
         (profile as unknown as Record<string, unknown>).linux_do_id
       ),
       isEnabled: status?.linuxdo_oauth || false,
-      onBind: () => void startOAuthBinding('linuxdo'),
+      onBind: () => void oauthBinding.startBinding('linuxdo'),
     },
   ].filter((binding) => binding.isEnabled)
 
@@ -435,15 +339,15 @@ export function AccountBindings({ profile, onUpdate }: AccountBindingsProps) {
         <SecureVerificationDialog {...security.verificationDialogProps} />
       )}
       <ConfirmDialog
-        open={preparedBinding !== null}
+        open={oauthBinding.prepared !== null}
         onOpenChange={(open) => {
-          if (!open) setPreparedBinding(null)
+          if (!open) oauthBinding.cancelPrepared()
         }}
         title={t('Continue account binding')}
         desc={t(
           'Your identity has been verified. Continue to the provider to finish linking your account.'
         )}
-        handleConfirm={() => void completeOAuthBinding()}
+        handleConfirm={() => void oauthBinding.completeBinding()}
         confirmText={t('Continue')}
       />
       {/* Custom OAuth Unbind Confirmation */}

@@ -24,6 +24,7 @@ import {
   isStripePayment,
   isWaffoPayment,
   isWaffoPancakePayment,
+  isGmpayPayment,
 } from './payment'
 
 describe('payment type classification', () => {
@@ -33,6 +34,11 @@ describe('payment type classification', () => {
     expect(isWaffoPancakePayment(PAYMENT_TYPES.WAFFO_PANCAKE)).toBe(true)
     expect(isWaffoPancakePayment(PAYMENT_TYPES.WAFFO)).toBe(false)
     expect(isStripePayment(PAYMENT_TYPES.STRIPE)).toBe(true)
+  })
+
+  test('recognizes GM Pay as its own dedicated flow', () => {
+    expect(isGmpayPayment(PAYMENT_TYPES.GMPAY)).toBe(true)
+    expect(isGmpayPayment(PAYMENT_TYPES.WAFFO_PANCAKE)).toBe(false)
   })
 })
 
@@ -56,6 +62,10 @@ describe('payment dispatch', () => {
           calls.push('pancake')
           return false
         },
+        gmpay: async () => {
+          calls.push('gmpay')
+          return false
+        },
       }
     )
 
@@ -76,10 +86,41 @@ describe('payment dispatch', () => {
           return true
         },
         waffoPancake: async () => false,
+        gmpay: async () => false,
       }
     )
 
     expect(success).toBe(false)
     expect(called).toBe(false)
+  })
+
+  test('routes GM Pay to its dedicated processor', async () => {
+    const calls: string[] = []
+    const success = await dispatchSelectedPayment(
+      { name: 'GM Pay', type: PAYMENT_TYPES.GMPAY },
+      50,
+      null,
+      {
+        regular: async () => {
+          calls.push('regular')
+          return false
+        },
+        waffo: async () => {
+          calls.push('waffo')
+          return false
+        },
+        waffoPancake: async () => {
+          calls.push('pancake')
+          return false
+        },
+        gmpay: async (amount) => {
+          calls.push(`gmpay:${amount}`)
+          return true
+        },
+      }
+    )
+
+    expect(success).toBe(true)
+    expect(calls).toEqual(['gmpay:50'])
   })
 })

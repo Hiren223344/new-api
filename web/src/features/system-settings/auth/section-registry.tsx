@@ -23,6 +23,7 @@ import { BotProtectionSection } from './bot-protection-section'
 import { CustomOAuthSection } from './custom-oauth/custom-oauth-section'
 import { OAuthSection } from './oauth-section'
 import { PasskeySection } from './passkey-section'
+import { TelegramChannelSection } from './telegram-channel-section'
 
 const AUTH_SECTIONS = [
   {
@@ -120,6 +121,21 @@ const AUTH_SECTIONS = [
     titleKey: 'Custom OAuth',
     build: (settings: AuthSettings) => (
       <CustomOAuthSection serverAddress={settings.ServerAddress} />
+    ),
+  },
+  {
+    id: 'telegram-channel',
+    titleKey: 'Telegram Channel Verification',
+    build: (settings: AuthSettings) => (
+      <TelegramChannelSection
+        defaultValues={{
+          'telegram_channel.enabled': settings['telegram_channel.enabled'],
+          'telegram_channel.chat_id': settings['telegram_channel.chat_id'],
+          'telegram_channel.join_link':
+            settings['telegram_channel.join_link'],
+          TelegramBotToken: settings.TelegramBotToken,
+        }}
+      />
     ),
   },
 ] as const

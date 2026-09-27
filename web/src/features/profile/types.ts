@@ -83,6 +83,8 @@ export interface UserProfile {
   oidc_id?: string
   /** Telegram ID (OAuth) */
   telegram_id?: string
+  /** Whether this user has verified membership in the required Telegram channel */
+  telegram_channel_verified?: boolean
   /** LinuxDO ID (OAuth) */
   linux_do_id?: string
 }

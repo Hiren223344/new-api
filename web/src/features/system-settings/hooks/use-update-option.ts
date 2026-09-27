@@ -45,6 +45,8 @@ const STATUS_RELATED_KEYS = new Set([
   'passkey.rp_id',
   'passkey.legacy_rp_ids',
   'passkey.origins',
+  'telegram_channel.enabled',
+  'telegram_channel.join_link',
 ])
 
 export function useUpdateOption() {

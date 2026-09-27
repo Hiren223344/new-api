@@ -184,6 +184,9 @@ export type AuthSettings = {
   'telegram.client_secret': string
   TelegramBotToken: string
   TelegramBotName: string
+  'telegram_channel.enabled': boolean
+  'telegram_channel.chat_id': string
+  'telegram_channel.join_link': string
   LinuxDOOAuthEnabled: boolean
   LinuxDOClientId: string
   LinuxDOClientSecret: string
@@ -352,6 +355,13 @@ export type BillingSettings = {
   // section (saved via /api/option/waffo-pancake/save).
   WaffoPancakeStoreID: string
   WaffoPancakeProductID: string
+  GmpayEnabled: boolean
+  GmpayDomain: string
+  GmpayPid: string
+  GmpaySecret: string
+  GmpayCurrency: string
+  GmpayMinTopUp: number
+  GmpayNotifyUrl: string
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number
