@@ -109,6 +109,7 @@ const defaultBillingSettings: BillingSettings = {
   GmpayPid: '',
   GmpaySecret: '',
   GmpayCurrency: 'USD',
+  GmpayUnitPrice: 1,
   GmpayMinTopUp: 1,
   GmpayNotifyUrl: '',
   'checkin_setting.enabled': false,

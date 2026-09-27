@@ -20,6 +20,27 @@ type GmpayPayRequest struct {
 	Amount int64 `json:"amount"`
 }
 
+// getGmpayPayMoney converts the user-facing amount to USD for GM Pay payment.
+// GM Pay settles in USD-denominated stablecoins, so this must use GmpayUnitPrice
+// rather than the Epay Price ratio (local currency per USD) that getPayMoney uses.
+func getGmpayPayMoney(amount float64, group string) float64 {
+	originalAmount := amount
+	if operation_setting.GetQuotaDisplayType() == operation_setting.QuotaDisplayTypeTokens {
+		amount = amount / common.QuotaPerUnit
+	}
+	topupGroupRatio := common.GetTopupGroupRatio(group)
+	if topupGroupRatio == 0 {
+		topupGroupRatio = 1
+	}
+	discount := 1.0
+	if ds, ok := operation_setting.GetPaymentSetting().AmountDiscount[int(originalAmount)]; ok {
+		if ds > 0 {
+			discount = ds
+		}
+	}
+	return amount * setting.GmpayUnitPrice * topupGroupRatio * discount
+}
+
 // RequestGmpayPay creates a GM Pay crypto top-up order and returns the
 // payment_url the frontend redirects the user to.
 func RequestGmpayPay(c *gin.Context) {
@@ -48,7 +69,7 @@ func RequestGmpayPay(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "获取用户分组失败"})
 		return
 	}
-	payMoney := getPayMoney(req.Amount, group)
+	payMoney := getGmpayPayMoney(float64(req.Amount), group)
 	if payMoney < 0.01 {
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "充值金额过低"})
 		return

@@ -30,6 +30,7 @@ export interface GmpaySettingsValues {
   GmpayPid: string
   GmpaySecret: string
   GmpayCurrency: string
+  GmpayUnitPrice: number
   GmpayMinTopUp: number
   GmpayNotifyUrl: string
 }
@@ -98,7 +99,7 @@ export function GmpaySettingsSection({ values, onValueChange }: Props) {
         </div>
       </div>
 
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-3 gap-4'>
         <div className='grid gap-1.5'>
           <Label>{t('Currency')}</Label>
           <Input
@@ -106,6 +107,21 @@ export function GmpaySettingsSection({ values, onValueChange }: Props) {
             value={values.GmpayCurrency}
             onChange={(event) =>
               onValueChange('GmpayCurrency', event.target.value)
+            }
+          />
+        </div>
+        <div className='grid gap-1.5'>
+          <Label>{t('Unit price (USD)')}</Label>
+          <Input
+            type='number'
+            step={0.1}
+            min={0}
+            value={values.GmpayUnitPrice}
+            onChange={(event) =>
+              onValueChange(
+                'GmpayUnitPrice',
+                event.target.value === '' ? 0 : event.target.valueAsNumber
+              )
             }
           />
         </div>

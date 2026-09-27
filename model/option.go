@@ -130,6 +130,7 @@ func InitOptionMap() {
 	common.OptionMap["GmpayPid"] = setting.GmpayPid
 	common.OptionMap["GmpaySecret"] = setting.GmpaySecret
 	common.OptionMap["GmpayCurrency"] = setting.GmpayCurrency
+	common.OptionMap["GmpayUnitPrice"] = strconv.FormatFloat(setting.GmpayUnitPrice, 'f', -1, 64)
 	common.OptionMap["GmpayMinTopUp"] = strconv.Itoa(setting.GmpayMinTopUp)
 	common.OptionMap["GmpayNotifyUrl"] = setting.GmpayNotifyUrl
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
@@ -579,6 +580,8 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.GmpaySecret = value
 	case "GmpayCurrency":
 		setting.GmpayCurrency = value
+	case "GmpayUnitPrice":
+		setting.GmpayUnitPrice, _ = strconv.ParseFloat(value, 64)
 	case "GmpayMinTopUp":
 		setting.GmpayMinTopUp, _ = strconv.Atoi(value)
 	case "GmpayNotifyUrl":

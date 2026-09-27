@@ -190,6 +190,7 @@ const paymentSchema = z.object({
   GmpayPid: z.string(),
   GmpaySecret: z.string(),
   GmpayCurrency: z.string(),
+  GmpayUnitPrice: z.coerce.number().min(0),
   GmpayMinTopUp: z.coerce.number().min(1),
   GmpayNotifyUrl: z.string(),
 })
@@ -501,6 +502,7 @@ export function PaymentSettingsSection({
       GmpayPid: values.GmpayPid.trim(),
       GmpaySecret: values.GmpaySecret.trim(),
       GmpayCurrency: values.GmpayCurrency.trim() || 'USD',
+      GmpayUnitPrice: values.GmpayUnitPrice,
       GmpayMinTopUp: values.GmpayMinTopUp,
       GmpayNotifyUrl: values.GmpayNotifyUrl.trim(),
     }
@@ -555,6 +557,7 @@ export function PaymentSettingsSection({
       GmpayPid: initialRef.current.GmpayPid.trim(),
       GmpaySecret: initialRef.current.GmpaySecret.trim(),
       GmpayCurrency: initialRef.current.GmpayCurrency.trim() || 'USD',
+      GmpayUnitPrice: initialRef.current.GmpayUnitPrice,
       GmpayMinTopUp: initialRef.current.GmpayMinTopUp,
       GmpayNotifyUrl: initialRef.current.GmpayNotifyUrl.trim(),
     }
@@ -774,6 +777,10 @@ export function PaymentSettingsSection({
       updates.push({ key: 'GmpayCurrency', value: sanitized.GmpayCurrency })
     }
 
+    if (sanitized.GmpayUnitPrice !== initial.GmpayUnitPrice) {
+      updates.push({ key: 'GmpayUnitPrice', value: sanitized.GmpayUnitPrice })
+    }
+
     if (sanitized.GmpayMinTopUp !== initial.GmpayMinTopUp) {
       updates.push({ key: 'GmpayMinTopUp', value: sanitized.GmpayMinTopUp })
     }
@@ -883,6 +890,7 @@ export function PaymentSettingsSection({
     GmpayPid: currentFormValues.GmpayPid,
     GmpaySecret: currentFormValues.GmpaySecret,
     GmpayCurrency: currentFormValues.GmpayCurrency,
+    GmpayUnitPrice: currentFormValues.GmpayUnitPrice,
     GmpayMinTopUp: currentFormValues.GmpayMinTopUp,
     GmpayNotifyUrl: currentFormValues.GmpayNotifyUrl,
   }

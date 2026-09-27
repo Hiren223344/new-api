@@ -360,6 +360,7 @@ export type BillingSettings = {
   GmpayPid: string
   GmpaySecret: string
   GmpayCurrency: string
+  GmpayUnitPrice: number
   GmpayMinTopUp: number
   GmpayNotifyUrl: string
   'checkin_setting.enabled': boolean

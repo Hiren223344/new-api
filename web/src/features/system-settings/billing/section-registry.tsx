@@ -184,6 +184,7 @@ const BILLING_SECTIONS = [
           GmpayPid: settings.GmpayPid ?? '',
           GmpaySecret: settings.GmpaySecret ?? '',
           GmpayCurrency: settings.GmpayCurrency ?? 'USD',
+          GmpayUnitPrice: settings.GmpayUnitPrice ?? 1,
           GmpayMinTopUp: settings.GmpayMinTopUp ?? 1,
           GmpayNotifyUrl: settings.GmpayNotifyUrl ?? '',
         }}
