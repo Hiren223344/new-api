@@ -111,6 +111,7 @@ func gmpayRequest(ctx context.Context, method, path string, params map[string]st
 	params["pid"] = pid
 	params["signature"] = gmpaySign(params, secret)
 
+	requestUrl := domain + path
 	var request *http.Request
 	var err error
 	if method == http.MethodGet {
@@ -118,13 +119,14 @@ func gmpayRequest(ctx context.Context, method, path string, params map[string]st
 		for k, v := range params {
 			values.Set(k, v)
 		}
-		request, err = http.NewRequestWithContext(ctx, http.MethodGet, domain+path+"?"+values.Encode(), nil)
+		requestUrl += "?" + values.Encode()
+		request, err = http.NewRequestWithContext(ctx, http.MethodGet, requestUrl, nil)
 	} else {
 		body, marshalErr := common.Marshal(params)
 		if marshalErr != nil {
 			return nil, fmt.Errorf("%w: %v", ErrGmpayRequestFailed, marshalErr)
 		}
-		request, err = http.NewRequestWithContext(ctx, method, domain+path, strings.NewReader(string(body)))
+		request, err = http.NewRequestWithContext(ctx, method, requestUrl, strings.NewReader(string(body)))
 		if err == nil {
 			request.Header.Set("Content-Type", "application/json")
 		}
@@ -133,18 +135,26 @@ func gmpayRequest(ctx context.Context, method, path string, params map[string]st
 		return nil, fmt.Errorf("%w: %v", ErrGmpayRequestFailed, err)
 	}
 
+	// pid identifies the merchant and is safe to log; the secret never is.
+	requestContext := fmt.Sprintf("url=%q pid=%q order_id=%q notify_url=%q currency=%q amount=%q", requestUrl, pid, params["order_id"], params["notify_url"], params["currency"], params["amount"])
+
 	response, err := gmpayHTTPClient.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrGmpayRequestFailed, err)
+		return nil, fmt.Errorf("%w: %s error=%v", ErrGmpayRequestFailed, requestContext, err)
 	}
 	defer response.Body.Close()
 
+	rawBody, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s error=%v", ErrGmpayRequestFailed, requestContext, err)
+	}
+
 	var envelope gmpayEnvelope
-	if err := common.DecodeJson(io.LimitReader(response.Body, 1<<20), &envelope); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrGmpayRequestFailed, err)
+	if err := common.Unmarshal(rawBody, &envelope); err != nil {
+		return nil, fmt.Errorf("%w: %s http_status=%d body=%q decode_error=%v", ErrGmpayRequestFailed, requestContext, response.StatusCode, string(rawBody), err)
 	}
 	if envelope.Data == nil {
-		return nil, fmt.Errorf("%w: %s", ErrGmpayRequestFailed, envelope.Message)
+		return nil, fmt.Errorf("%w: %s http_status=%d message=%q body=%q", ErrGmpayRequestFailed, requestContext, response.StatusCode, envelope.Message, string(rawBody))
 	}
 	return envelope.Data, nil
 }
