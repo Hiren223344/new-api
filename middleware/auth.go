@@ -65,6 +65,9 @@ func authHelper(c *gin.Context, minRole int) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"success": false, "code": "AUTH_USER_INVALID", "message": common.TranslateMessage(c, i18n.MsgAuthUserInfoInvalid)})
 		return
 	}
+	if blockTelegramChannelGate(c, user) {
+		return
+	}
 	setDashboardAuthContext(c, user, identity, useAccessToken)
 
 	// 管理/root 写操作审计兜底：内聚在鉴权链路里，保证任何经过 AdminAuth/RootAuth
@@ -447,6 +450,10 @@ func TokenAuth() func(c *gin.Context) {
 		userEnabled := userCache.Status == common.UserStatusEnabled
 		if !userEnabled {
 			abortWithOpenAiMessage(c, http.StatusForbidden, common.TranslateMessage(c, i18n.MsgAuthUserBanned))
+			return
+		}
+		if telegramChannelGateBlocks(userCache) {
+			abortWithOpenAiMessage(c, http.StatusForbidden, telegramChannelGateErrorMessage)
 			return
 		}
 

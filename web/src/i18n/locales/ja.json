@@ -6777,6 +6777,24 @@
     "Zhipu": "Zhipu",
     "Zhipu GLM": "Zhipu GLM",
     "Zhipu V4": "Zhipu V 4",
-    "Zoom": "ズーム"
+    "Zoom": "ズーム",
+    "One more step": "One more step",
+    "Join our Telegram channel to unlock your dashboard and API access.": "Join our Telegram channel to unlock your dashboard and API access.",
+    "First, link your Telegram account.": "First, link your Telegram account.",
+    "Link Telegram account": "Link Telegram account",
+    "Join the Telegram channel": "Join the Telegram channel",
+    "Checking…": "Checking…",
+    "I've joined — verify now": "I've joined — verify now",
+    "We couldn't confirm you've joined yet. Join the channel, then try again.": "We couldn't confirm you've joined yet. Join the channel, then try again.",
+    "Verified! Welcome aboard.": "Verified! Welcome aboard.",
+    "Telegram Channel Verification": "Telegram Channel Verification",
+    "Add your bot as an administrator of the target channel, so it can confirm whether a user has joined. New and existing users are required to verify before they can use the dashboard or the API.": "Add your bot as an administrator of the target channel, so it can confirm whether a user has joined. New and existing users are required to verify before they can use the dashboard or the API.",
+    "Require Telegram channel membership": "Require Telegram channel membership",
+    "Block sign-in and API access until the user verifies they joined the channel below.": "Block sign-in and API access until the user verifies they joined the channel below.",
+    "Bot token from BotFather": "Bot token from BotFather",
+    "Also used for the legacy Telegram bot name shown to users; the bot must be an administrator of the channel below.": "Also used for the legacy Telegram bot name shown to users; the bot must be an administrator of the channel below.",
+    "Join Link": "Join Link",
+    "The channel username or numeric chat ID passed to the Telegram Bot API.": "The channel username or numeric chat ID passed to the Telegram Bot API.",
+    "Shown to users so they can actually join the channel.": "Shown to users so they can actually join the channel."
   }
 }

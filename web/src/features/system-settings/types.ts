@@ -184,6 +184,9 @@ export type AuthSettings = {
   'telegram.client_secret': string
   TelegramBotToken: string
   TelegramBotName: string
+  'telegram_channel.enabled': boolean
+  'telegram_channel.chat_id': string
+  'telegram_channel.join_link': string
   LinuxDOOAuthEnabled: boolean
   LinuxDOClientId: string
   LinuxDOClientSecret: string

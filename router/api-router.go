@@ -139,6 +139,9 @@ func SetApiRouter(router *gin.Engine) {
 				// Custom OAuth bindings
 				selfRoute.GET("/oauth/bindings", controller.GetUserOAuthBindings)
 				selfRoute.DELETE("/oauth/bindings/:provider_id", controller.UnbindCustomOAuth)
+
+				// Telegram channel verification gate
+				selfRoute.POST("/telegram-channel/verify", middleware.UserCriticalRateLimit("telegram-channel-verify"), middleware.DisableCache(), controller.VerifyTelegramChannelMembership)
 			}
 
 			adminRoute := userRoute.Group("/")
