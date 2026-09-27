@@ -92,11 +92,34 @@ describe('TelegramChannelGate', () => {
 
   it('blocks and offers to link Telegram when no account is linked yet', async () => {
     currentProfile = { ...baseProfile, telegram_channel_verified: false }
-    renderGate({ telegram_channel_gate_enabled: true })
+    renderGate({
+      telegram_channel_gate_enabled: true,
+      telegram_oauth_configured: true,
+    })
+
+    const linkButton = await screen.findByRole('button', {
+      name: 'Link Telegram account',
+    })
+    expect(linkButton).toBeInTheDocument()
+    expect(linkButton).toBeEnabled()
+    expect(screen.queryByText('dashboard content')).not.toBeInTheDocument()
+  })
+
+  it('warns and disables linking when Telegram OAuth is not configured', async () => {
+    currentProfile = { ...baseProfile, telegram_channel_verified: false }
+    renderGate({
+      telegram_channel_gate_enabled: true,
+      telegram_oauth_configured: false,
+    })
 
     expect(
-      await screen.findByRole('button', { name: 'Link Telegram account' })
+      await screen.findByText(
+        'Telegram OAuth is not configured or enabled. Please contact your administrator.'
+      )
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Link Telegram account' })
+    ).toBeDisabled()
     expect(screen.queryByText('dashboard content')).not.toBeInTheDocument()
   })
 

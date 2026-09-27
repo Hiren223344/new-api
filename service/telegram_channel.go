@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/logger"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/setting/system_setting"
 )
@@ -85,12 +86,18 @@ func CheckTelegramChannelMembership(ctx context.Context, telegramUserID string) 
 	}
 	response, err := telegramChannelHTTPClient.Do(request)
 	if err != nil {
+		logger.LogError(ctx, fmt.Sprintf("Telegram getChatMember 请求失败 chat_id=%q user_id=%q error=%q", chatId, telegramUserID, err.Error()))
 		return false, fmt.Errorf("%w: %v", ErrTelegramChannelCheckFailed, err)
 	}
 	defer response.Body.Close()
 
+	rawBody, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrTelegramChannelCheckFailed, err)
+	}
 	var parsed telegramChatMemberResponse
-	if err := common.DecodeJson(io.LimitReader(response.Body, 1<<20), &parsed); err != nil {
+	if err := common.Unmarshal(rawBody, &parsed); err != nil {
+		logger.LogError(ctx, fmt.Sprintf("Telegram getChatMember 响应解析失败 chat_id=%q user_id=%q http_status=%d body=%q error=%q", chatId, telegramUserID, response.StatusCode, string(rawBody), err.Error()))
 		return false, fmt.Errorf("%w: %v", ErrTelegramChannelCheckFailed, err)
 	}
 	if !parsed.Ok {
@@ -98,8 +105,10 @@ func CheckTelegramChannelMembership(ctx context.Context, telegramUserID string) 
 		// (never started the bot) or a misconfigured token. Any of those mean
 		// membership cannot be confirmed, not that the check itself failed, so
 		// callers should not retry endlessly against a bad configuration.
+		logger.LogWarn(ctx, fmt.Sprintf("Telegram getChatMember 返回 ok=false chat_id=%q user_id=%q http_status=%d body=%q", chatId, telegramUserID, response.StatusCode, string(rawBody)))
 		return false, nil
 	}
+	logger.LogInfo(ctx, fmt.Sprintf("Telegram getChatMember 成功 chat_id=%q user_id=%q status=%q", chatId, telegramUserID, parsed.Result.Status))
 	return slices.Contains(telegramMemberStatuses, parsed.Result.Status), nil
 }
 

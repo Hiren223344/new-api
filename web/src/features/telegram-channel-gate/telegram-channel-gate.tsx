@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useOAuthAccountBinding } from '@/features/auth/hooks/use-oauth-account-binding'
 import { SecureVerificationDialog } from '@/features/auth/secure-verification'
@@ -110,12 +111,21 @@ export function TelegramChannelGate({ children }: { children: ReactNode }) {
 
         {!profile?.telegram_id ? (
           <div className='space-y-3'>
+            {!status?.telegram_oauth_configured && (
+              <Alert variant='destructive'>
+                <AlertDescription>
+                  {t(
+                    'Telegram OAuth is not configured or enabled. Please contact your administrator.'
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
             <p className='text-center text-sm'>
               {t('First, link your Telegram account.')}
             </p>
             <Button
               className='w-full'
-              disabled={security.pending}
+              disabled={security.pending || !status?.telegram_oauth_configured}
               onClick={() => void oauthBinding.startBinding('telegram')}
             >
               {t('Link Telegram account')}
