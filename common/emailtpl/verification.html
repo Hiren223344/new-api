@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" style="height: 100%;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>Verify your email</title>
+  <style>
+    html, body {
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    @media only screen and (max-width: 520px) {
+      .email-cell {
+        padding: 16px 12px !important;
+      }
+      .card-content {
+        padding: 30px 22px 26px 22px !important;
+        border-radius: 14px !important;
+      }
+      .brand-title {
+        font-size: 24px !important;
+        margin-bottom: 22px !important;
+      }
+      .heading-title {
+        font-size: 21px !important;
+        line-height: 27px !important;
+      }
+      .code-box {
+        font-size: 26px !important;
+        letter-spacing: 5px !important;
+        padding: 14px 20px !important;
+      }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; width: 100% !important; height: 100% !important; background-color: #F6F6F7; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+
+  <!-- 100% Height & Width Outer Table for True Center Alignment -->
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" height="100%" bgcolor="#F6F6F7" style="border-collapse: collapse; background-color: #F6F6F7; width: 100%; height: 100%; min-height: 100%;">
+    <tr>
+      <!-- align="center" for horizontal centering, valign="middle" for vertical centering -->
+      <td align="center" valign="middle" class="email-cell" style="padding: 32px 16px; vertical-align: middle;">
+
+        <!-- Centered Card Container -->
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" align="center" style="max-width: 480px; width: 100%; margin: 0 auto; background-color: #FFFFFF; border: 1px solid #E6E6E9; border-radius: 18px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);">
+          <tr>
+            <td class="card-content" align="left" style="padding: 38px 36px 32px 36px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+
+              <!-- Left-Aligned Wordmark (Normal Weight: 500) -->
+              <p class="brand-title" style="margin: 0 0 24px 0; text-align: left; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 25px; line-height: 1; font-weight: 500; letter-spacing: -0.4px; color: #0B0B0F;">
+                Frenix
+              </p>
+
+              <!-- Main Heading (Normal Weight: 400) -->
+              <p class="heading-title" style="margin: 0 0 10px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 22px; line-height: 28px; font-weight: 400; color: #0B0B0F;">
+                Verify your email
+              </p>
+
+              <!-- Description (Thin / Light Weight: 300) -->
+              <p style="margin: 0 0 28px 0; font-size: 15px; line-height: 22px; font-weight: 300; color: #555964;">
+                Enter this code to finish creating your Frenix account.
+              </p>
+
+              <!-- Verification Code Badge -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto 28px auto;">
+                <tr>
+                  <td class="code-box" align="center" bgcolor="#0B0B0F" style="background-color: #0B0B0F; border-radius: 12px; padding: 15px 28px; color: #FFFFFF; font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'Courier New', monospace; font-size: 28px; line-height: 1; font-weight: 400; letter-spacing: 6px; text-align: center; border: 1px solid #0B0B0F;">
+                    {{.Code}}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Expiration Warning (Thin / Light Weight: 300) -->
+              <p style="margin: 0 0 28px 0; font-size: 14px; line-height: 21px; font-weight: 300; color: #555964;">
+                This code expires in {{.Minutes}} minutes. If you didn’t request it, you can safely ignore this email.
+              </p>
+
+              <!-- Divider -->
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td height="1" style="border-top: 1px solid #EAECEF; font-size: 1px; line-height: 1px; height: 1px; padding: 0;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <!-- Footer Note (Thin / Light Weight: 300) -->
+              <p style="margin: 20px 0 0 0; font-size: 12px; line-height: 18px; font-weight: 300; color: #8F939E;">
+                Sent by Frenix. Never share this code with anyone.
+              </p>
+
+            </td>
+          </tr>
+        </table>
+        <!-- End Centered Card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
