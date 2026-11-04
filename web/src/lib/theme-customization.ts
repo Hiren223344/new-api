@@ -116,11 +116,11 @@ export type ThemeCustomization = {
 }
 
 export const DEFAULT_THEME_CUSTOMIZATION: ThemeCustomization = {
-  preset: 'default',
-  font: 'default',
-  radius: 'default',
-  scale: 'default',
-  contentLayout: 'full',
+  preset: 'simple-large',
+  font: 'sans',
+  radius: 'xl',
+  scale: 'sm',
+  contentLayout: 'centered',
 }
 
 export const THEME_PRESET_VALUES = new Set(
